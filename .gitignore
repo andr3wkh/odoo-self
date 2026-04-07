@@ -1,6 +1,7 @@
-# Secrets
+# Secrets & internal docs
 .env
 *.env.local
+CLAUDE.internal.md
 
 # Migration scripts (one-time use, contain paths/config — copy to server directly)
 migrate_*.py
