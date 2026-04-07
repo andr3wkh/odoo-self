@@ -1,8 +1,8 @@
-# Odoo 18 Self-Hosted — Oblify bv
+# Odoo 18 Self-Hosted Startup Kit
 
 ## Project Overview
 
-Self-hosted Odoo 18 (Community Edition) with OCA addons for **Oblify bv**, a Belgian startup (Antwerpen). Migrated from the Odoo.com SaaS instance at `meezy.odoo.com`.
+Self-hosted Odoo 18 (Community Edition) with OCA addons — a complete startup ERP covering HR, Payroll, Finance, Leave, Appraisals, CRM, Sales, Purchase, and Stock.
 
 ## Quick Start
 
@@ -28,10 +28,7 @@ http://localhost         # Via Nginx
 
 ## Credentials
 
-- **Odoo Admin**: admin / (see .env `DST_ODOO_PASSWORD`)
-- **DB**: odoo / (see .env `POSTGRES_PASSWORD`)
-- **Admin Master Password**: (see .env `ODOO_ADMIN_PASSWD`)
-- All secrets are in `.env` (git-ignored). Copy `.env.example` to `.env` and fill in.
+All secrets are in `.env` (git-ignored). See `.env.example` for the template.
 
 ## Key Files
 
@@ -40,19 +37,8 @@ http://localhost         # Via Nginx
 | `docker-compose.yml` | All services (pg17, redis, odoo, nginx) |
 | `Dockerfile` | Odoo image + 36 OCA repos cloned at build |
 | `config/odoo.conf` | Odoo config with all addon paths |
-| `init-fresh.sh` | Nuclear option — drops DB, rebuilds everything |
-| `migrate_data.py` | Migrates employees from CSV exports |
-| `migrate_company.py` | Migrates company setup from meezy.odoo.com |
-| `setup_andrew.py` | Full onboarding example (Andrew Khalil) |
-
-## Company Info
-
-- **Name**: Oblify bv
-- **Country**: Belgium (BE)
-- **VAT**: BE0778399363
-- **Currency**: EUR (primary), USD and EGP active
-- **Chart of Accounts**: Belgian PCMN (563 accounts)
-- **Fiscal Positions**: National, Intra-EU, EU B2C, Extra-EU
+| `init-fresh.sh` | Full reset — drops DB, rebuilds everything |
+| `addons/` | Your custom modules go here |
 
 ## Installed Module Groups (164 total)
 
@@ -63,7 +49,7 @@ http://localhost         # Via Nginx
 `hr_holidays`, `hr_holidays_public`, `hr_holidays_attendance`, `hr_holidays_contract`, `calendar_public_holiday`
 
 ### Payroll
-`payroll` (OCA), `payroll_account` — multi-currency (USD/EUR journals)
+`payroll` (OCA), `payroll_account` — supports multi-currency journals
 
 ### Finance
 `account`, `account_asset_management`, `account_financial_report`, `account_tax_balance`, `account_fiscal_year`, `account_payment_order`, `mis_builder`, `mis_builder_budget`, `mis_builder_cash_flow`
@@ -75,7 +61,7 @@ CRM, Sales, Purchase, Stock, Project, Spreadsheet Dashboards, Contracts
 
 payroll, hr, hr-attendance, hr-expense, hr-holidays, contract, timesheet, account-financial-tools, account-financial-reporting, account-invoicing, account-payment, account-analytic, account-budgeting, account-closing, bank-payment, mis-builder, operating-unit, l10n-usa, sale-workflow, purchase-workflow, stock-logistics-warehouse, stock-logistics-workflow, crm, project, calendar, reporting-engine, server-ux, server-tools, web, partner-contact, social, manufacture, knowledge, queue, connector
 
-## Payroll Structure
+## Payroll Structure (Example)
 
 Structure: **Base Salary Structure** (code: BASE)
 
@@ -88,17 +74,22 @@ Structure: **Base Salary Structure** (code: BASE)
 | Social Security | SSC | % | -7% of GROSS |
 | Net Salary | NET | Code | `categories.GROSS + categories.DED` |
 
-Accounts: Expense=620100, Payable=440100, SS Payable=453100
+Customize these rules to match your country's requirements.
 
 ## Multi-Currency Payroll
 
-- **PYUSD** journal: For USD-paid employees (e.g., Egypt team)
-- **PYEUR** journal: For EUR-paid employees (e.g., Belgium team)
-- Set `journal_id` on the employee's contract to route to correct journal
+Create separate payroll journals for each currency (e.g., `PYUSD`, `PYEUR`). Set `journal_id` on the employee's contract to route payroll to the correct journal.
 
 ## Development Notes
 
 - OCA payroll uses `BrowsableObject` — access categories via dot notation: `categories.BASIC`, not `categories['BASIC']`
-- Source Odoo (meezy.odoo.com) runs 19.0 SaaS — some fields differ from 18.0 (`mobile` removed from `res.partner`, `deprecated`/`company_id` removed from `account.account`)
-- Leave type `requires_allocation` is a selection field in 18.0 (`yes`/`no`), was boolean in older versions
-- Appraisal states: `1_new`, `2_pending`, `3_done` (OCA module)
+- Leave type `requires_allocation` is a selection field (`yes`/`no`), not boolean
+- Appraisal states (OCA): `1_new`, `2_pending`, `3_done`
+- Place custom modules in `addons/` — they are auto-loaded via the addon path in `odoo.conf`
+
+## Localization
+
+Default: US (`l10n_us`). To switch countries:
+1. Install your localization module via Odoo Apps (e.g., `l10n_be`, `l10n_de`, `l10n_fr`)
+2. Configure chart of accounts, taxes, fiscal positions
+3. Update company country and currency in Settings

@@ -1,4 +1,4 @@
-# Architecture — Odoo 18 Self-Hosted (Oblify bv)
+# Architecture — Odoo 18 Self-Hosted Startup Kit
 
 ## Infrastructure Diagram
 
@@ -40,16 +40,16 @@ Recruitment → Onboarding → Contract → Payroll → Leave → Appraisal
 ### Payroll → Finance Flow
 
 ```
-hr.contract (wage=$1000, journal=PYUSD)
+hr.contract (wage, journal, structure)
      ↓
 hr.payslip (compute_sheet → salary rules → payslip lines)
      ↓
 action_payslip_done → account.move (journal entry)
      ↓
 ┌─────────────────────────────────────────────────┐
-│  620100 Salary Expense         DR  $1,150.00    │
-│  440100 Salaries Payable       CR  $1,069.50    │
-│  453100 Social Security Pay.   CR  $   80.50    │
+│  6xxxxx Salary Expense         DR  (gross)      │
+│  4xxxxx Salaries Payable       CR  (net pay)    │
+│  4xxxxx Social Security Pay.   CR  (deductions) │
 └─────────────────────────────────────────────────┘
      ↓
 MIS Builder → P&L Report (salary expense line)
@@ -60,18 +60,18 @@ MIS Builder → P&L Report (salary expense line)
 ### Multi-Currency Setup
 
 ```
-Belgian employees (EUR)  →  Contract.journal_id = PYEUR  →  EUR journal entries
-Egyptian employees (USD) →  Contract.journal_id = PYUSD  →  USD journal entries
-                                                                    ↓
-                                                          Auto-converted to EUR
-                                                          at company currency rate
+Currency A employees  →  Contract.journal_id = PY_A  →  Currency A entries
+Currency B employees  →  Contract.journal_id = PY_B  →  Currency B entries
+                                                              ↓
+                                                    Auto-converted to company
+                                                    currency at current rate
 ```
 
 ## Module Architecture
 
 ### Core Odoo 18 (built-in)
 - `base`, `account`, `hr`, `crm`, `sale`, `purchase`, `stock`, `project`
-- Belgian localization: `l10n_be` (PCMN chart of accounts, taxes)
+- Country localizations installed separately (e.g., `l10n_us`, `l10n_be`, `l10n_de`)
 
 ### OCA Community Addons (36 repos, 18.0 branch)
 
@@ -81,7 +81,7 @@ Egyptian employees (USD) →  Contract.journal_id = PYUSD  →  USD journal entr
 ├── hr-attendance/         # Attendance extensions
 ├── hr-expense/           # Expense approvals, sequences
 ├── hr-holidays/          # Public holidays, leave extensions
-├── payroll/              # OCA Payroll engine (replaces Enterprise payroll)
+├── payroll/              # OCA Payroll engine
 ├── contract/             # Employee contract management
 ├── timesheet/            # Timesheet extensions
 ├── account-financial-tools/      # Asset mgmt, fiscal year, tax balance
@@ -109,42 +109,42 @@ Egyptian employees (USD) →  Contract.journal_id = PYUSD  →  USD journal entr
 ## Database Schema (Key Models)
 
 ### HR Domain
-| Model | Table | Records | Purpose |
-|-------|-------|---------|---------|
-| `hr.employee` | hr_employee | 41 | Employee profiles |
-| `hr.department` | hr_department | 14 | Org structure |
-| `hr.job` | hr_job | 42 | Job positions |
-| `hr.contract` | hr_contract | 1 | Employment contracts |
-| `hr.leave` | hr_leave | 8 | Leave requests |
-| `hr.leave.allocation` | hr_leave_allocation | 6 | Leave balances |
-| `hr.leave.type` | hr_leave_type | 19 | Leave categories |
-| `hr.expense` | hr_expense | 57 | Expense claims |
-| `hr.appraisal` | hr_appraisal | 1 | Performance reviews |
+| Model | Purpose |
+|-------|---------|
+| `hr.employee` | Employee profiles |
+| `hr.department` | Org structure |
+| `hr.job` | Job positions |
+| `hr.contract` | Employment contracts |
+| `hr.leave` | Leave requests |
+| `hr.leave.allocation` | Leave balances |
+| `hr.leave.type` | Leave categories |
+| `hr.expense` | Expense claims |
+| `hr.appraisal` | Performance reviews |
 
 ### Payroll Domain
-| Model | Table | Purpose |
-|-------|-------|---------|
-| `hr.payroll.structure` | hr_payroll_structure | Salary structure templates |
-| `hr.salary.rule` | hr_salary_rule | Computation rules (BASIC, GROSS, NET) |
-| `hr.salary.rule.category` | hr_salary_rule_category | Rule grouping (BASIC, ALW, DED, NET) |
-| `hr.payslip` | hr_payslip | Monthly payslips |
-| `hr.payslip.line` | hr_payslip_line | Computed salary lines |
+| Model | Purpose |
+|-------|---------|
+| `hr.payroll.structure` | Salary structure templates |
+| `hr.salary.rule` | Computation rules (BASIC, GROSS, NET) |
+| `hr.salary.rule.category` | Rule grouping (BASIC, ALW, DED, NET) |
+| `hr.payslip` | Monthly payslips |
+| `hr.payslip.line` | Computed salary lines |
 
 ### Finance Domain
-| Model | Table | Records | Purpose |
-|-------|-------|---------|---------|
-| `account.account` | account_account | 563 | Chart of accounts (Belgian PCMN) |
-| `account.tax` | account_tax | 31 | Belgian VAT taxes |
-| `account.journal` | account_journal | 18 | Journals (sales, bank, payroll) |
-| `account.move` | account_move | - | Journal entries (invoices, payroll) |
-| `account.payment.term` | account_payment_term | 11 | Payment terms |
-| `account.fiscal.position` | account_fiscal_position | 6 | Tax mapping rules |
+| Model | Purpose |
+|-------|---------|
+| `account.account` | Chart of accounts |
+| `account.tax` | Tax configuration |
+| `account.journal` | Journals (sales, bank, payroll) |
+| `account.move` | Journal entries (invoices, payroll) |
+| `account.payment.term` | Payment terms |
+| `account.fiscal.position` | Tax mapping rules |
 
 ### CRM / Sales
-| Model | Table | Records | Purpose |
-|-------|-------|---------|---------|
-| `res.partner` | res_partner | 217+ | Customers & vendors |
-| `product.template` | product_template | 29 | Service catalog |
+| Model | Purpose |
+|-------|---------|
+| `res.partner` | Customers & vendors |
+| `product.template` | Product / service catalog |
 
 ## Reporting Stack
 
@@ -158,7 +158,7 @@ Egyptian employees (USD) →  Contract.journal_id = PYUSD  →  USD journal entr
 - **Trial Balance**: Account balances for any period
 - **General Ledger**: All transactions per account
 - **Aged Partner Balance**: Outstanding receivables/payables
-- **Tax Balance**: VAT return preparation
+- **Tax Balance**: VAT/tax return preparation
 
 ### Spreadsheet Dashboards
 - Pre-built dashboards for Sales, HR, Expenses, Timesheets
@@ -176,7 +176,7 @@ Egyptian employees (USD) →  Contract.journal_id = PYUSD  →  USD journal entr
 | Accounting Manager | Full accounting access |
 
 ### Access Notes
-- Admin user must be explicitly added to Appraisals groups
+- Admin must be explicitly added to Appraisals groups (OCA module)
 - Leave approvers are set per employee (`leave_manager_id`)
 - Expense approvers are set per employee (`expense_manager_id`)
 
@@ -191,8 +191,8 @@ Egyptian employees (USD) →  Contract.journal_id = PYUSD  →  USD journal entr
 | Payroll Structure | Payroll > Configuration > Structures |
 | Salary Rules | Payroll > Configuration > Salary Rules |
 | Leave Types | Time Off > Configuration > Leave Types |
-| Leave Allocations | Time Off > Managers > Allocations |
-| Appraisal | Appraisals > Appraisals |
+| Allocations | Time Off > Managers > Allocations |
+| Appraisals | Appraisals > Appraisals |
 | MIS Reports | Accounting > Configuration > MIS Reports |
 | Work Schedules | Employees > Configuration > Working Schedules |
 | Departments | Employees > Configuration > Departments |

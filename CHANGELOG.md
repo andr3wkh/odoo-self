@@ -1,65 +1,28 @@
-# Changelog — Odoo 18 Self-Hosted (Docker)
+# Changelog
 
-## 2026-04-07 — Installation Review & Completion
+## v1.0.0 — 2026-04-07
 
-### Fixed
-- **docker-compose.yml**: Corrected service comment from "Odoo 17" to "Odoo 18"
-- **config/odoo.conf**: Fixed `addons_path` — was multiline (breaks Odoo config parser), now single-line comma-separated
-- **config/odoo.conf**: Added `gevent_port = 8072` for longpolling/websocket workers
-- **Dockerfile**: Added `--break-system-packages` flag to `pip3 install` (required on Debian 12+ / Odoo 18 image)
-- **Dockerfile**: Added `xlsxwriter` to pip dependencies (required by `report_xlsx` and financial reports)
+### Initial Release
 
-### Added — New OCA Modules
-| Module | Repository | Purpose |
-|---|---|---|
-| **account-invoicing** | `OCA/account-invoicing` | Invoice workflow enhancements |
-| **account-payment** | `OCA/account-payment` | Payment processing tools |
-| **server-tools** | `OCA/server-tools` | Base utilities (auditlog, auto_backup, cron exclusion) |
-| **web** | `OCA/web` | Backend UI improvements (responsive, dark mode, widgets) |
-| **social** | `OCA/social` | Mail & messaging enhancements |
-| **manufacture** | `OCA/manufacture` | Manufacturing/MRP extensions |
-| **knowledge** | `OCA/knowledge` | Document management |
-| **queue** | `OCA/queue` | Background job runner (queue_job) |
-| **connector** | `OCA/connector` | Integration/sync framework |
-| **stock-logistics-workflow** | `OCA/stock-logistics-workflow` | Picking & delivery workflow extensions |
+**Infrastructure:**
+- Dockerized stack: Odoo 18 + PostgreSQL 17 + Redis 7 + Nginx
+- All secrets managed via `.env` (git-ignored)
+- Full install script (`init-fresh.sh`) — single command setup
 
-### Added — Infrastructure
-- **docker-compose.yml**: Mounted `./enterprise:/mnt/enterprise` volume for optional Enterprise addons
-- **config/odoo.conf**: Added `/mnt/enterprise` to `addons_path`
-- **.gitignore**: Created with rules for `.env`, `__pycache__`, IDE files, Docker volumes, and `enterprise/`
+**OCA Addons (36 repos, all 18.0 branch):**
+- HR: payroll, attendance, expenses, holidays, contracts, timesheets, appraisals
+- Finance: account-financial-tools, account-financial-reporting, account-analytic, account-budgeting, account-closing, mis-builder
+- Sales/Purchase/Stock: sale-workflow, purchase-workflow, stock-logistics-warehouse, stock-logistics-workflow
+- Other: crm, project, calendar, reporting-engine, server-ux, server-tools, web, partner-contact, social, manufacture, knowledge, queue, connector
 
-### Previously Existing (from initial setup)
-These were already configured before this review:
+**164 modules installed** covering:
+- Full HR lifecycle (recruitment → onboarding → contracts → payroll → leave → appraisals)
+- Multi-currency payroll with accounting integration
+- MIS Builder for P&L, Balance Sheet, Cash Flow reports
+- Expense management with tier approval workflows
+- CRM, Sales, Purchase, Stock, Project management
 
-**Docker Services:**
-- PostgreSQL 16 with health checks
-- Redis 7 (session store)
-- Odoo 18 (custom Dockerfile)
-- Nginx reverse proxy with websocket support, gzip, static file caching
-
-**OCA Modules (16 repos):**
-- payroll, hr, hr-attendance, hr-expense, hr-holidays
-- account-financial-tools, account-financial-reporting, bank-payment
-- server-ux, reporting-engine, mis-builder
-- project, crm, purchase-workflow, sale-workflow
-- stock-logistics-warehouse, partner-contact
-
-**Configuration:**
-- `odoo.conf` — 2 workers, proxy mode, memory limits, cron threads
-- `nginx/odoo.conf` — reverse proxy with websocket, static caching, gzip
-
----
-
-## Summary
-
-| Category | Count |
-|---|---|
-| OCA module repositories | **26** |
-| Docker services | **4** (Postgres, Redis, Odoo, Nginx) |
-| Exposed ports | 80 (nginx), 8069 (odoo), 8072 (longpoll), 5432 (pg), 6379 (redis) |
-
-### Next Steps
-1. `docker compose build` — rebuild the image to clone all OCA repos
-2. `docker compose up -d` — start all services
-3. Visit `http://localhost` — create your first database
-4. If you have Odoo Enterprise, place addons in the `enterprise/` directory
+**Documentation:**
+- ARCHITECTURE.md — system architecture and data flows
+- BEST_PRACTICES.md — startup management playbook
+- CLAUDE.md — development reference

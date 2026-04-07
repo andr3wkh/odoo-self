@@ -1,6 +1,6 @@
-# Odoo 18 Self-Hosted — Oblify bv
+# Odoo 18 Self-Hosted Startup Kit
 
-Self-hosted Odoo 18 Community Edition with 36 OCA addons, running on Docker with PostgreSQL 17, Redis, and Nginx.
+A production-ready, self-hosted Odoo 18 Community Edition setup with 36 OCA addons — everything a startup needs for HR, Payroll, Finance, Leave, Appraisals, and more.
 
 ## Stack
 
@@ -18,30 +18,30 @@ Self-hosted Odoo 18 Community Edition with 36 OCA addons, running on Docker with
 git clone git@github.com:andr3wkh/odoo-self.git
 cd odoo-self
 
-# 2. Configure secrets
+# 2. Configure
 cp .env.example .env
-nano .env  # fill in your passwords
+nano .env  # set your passwords
 
-# 3. Build and install (takes ~10 min first time)
+# 3. Build and install (~10 min first time)
 bash init-fresh.sh
 
 # 4. Access
 open http://localhost:8069
 ```
 
-## What's Included
+## What's Included (164 modules)
 
 ### HR & People
-Employee management, attendance, contracts, expenses (with approval workflows), fleet, recruitment, skills, timesheets, work entries, presence tracking, remote work, org chart, appraisals (OCA).
+Employee management, attendance, contracts, expenses (with approval workflows), fleet, recruitment, skills, timesheets, work entries, presence tracking, remote work, org chart, appraisals.
 
 ### Leave Management
-Holidays, public holidays, attendance integration, contract-based leave.
+Holidays, public holidays, attendance integration, contract-based leave, leave allocation workflows.
 
 ### Payroll
-OCA Payroll with multi-currency support (USD/EUR journals), salary structures, accounting integration.
+OCA Payroll with multi-currency support, configurable salary structures, and full accounting integration.
 
 ### Finance & Accounting
-Belgian PCMN chart of accounts (563 accounts), 29 Belgian VAT taxes, asset management, fiscal years, payment orders, banking mandates.
+Configurable chart of accounts, tax management, asset management, fiscal years, payment orders, banking mandates. Supports any country's localization.
 
 ### Reporting
 MIS Builder for P&L, Balance Sheet, and Cash Flow reports. XLSX export. Spreadsheet dashboards for Sales, HR, Expenses, Timesheets.
@@ -51,30 +51,26 @@ CRM, Sales, Purchase, Stock, Project, Calendar, Contracts.
 
 ## OCA Repositories (36 repos, all on 18.0)
 
-payroll, hr, hr-attendance, hr-expense, hr-holidays, contract, timesheet, account-financial-tools, account-financial-reporting, account-invoicing, account-payment, account-analytic, account-budgeting, account-closing, bank-payment, mis-builder, operating-unit, l10n-usa, sale-workflow, purchase-workflow, stock-logistics-warehouse, stock-logistics-workflow, crm, project, calendar, reporting-engine, server-ux, server-tools, web, partner-contact, social, manufacture, knowledge, queue, connector
+`payroll` `hr` `hr-attendance` `hr-expense` `hr-holidays` `contract` `timesheet` `account-financial-tools` `account-financial-reporting` `account-invoicing` `account-payment` `account-analytic` `account-budgeting` `account-closing` `bank-payment` `mis-builder` `operating-unit` `l10n-usa` `sale-workflow` `purchase-workflow` `stock-logistics-warehouse` `stock-logistics-workflow` `crm` `project` `calendar` `reporting-engine` `server-ux` `server-tools` `web` `partner-contact` `social` `manufacture` `knowledge` `queue` `connector`
 
 ## Project Structure
 
 ```
 odoo-self/
-├── Dockerfile              # Odoo 18 + OCA repos
-├── docker-compose.yml      # All services
+├── Dockerfile              # Odoo 18 image + OCA repos
+├── docker-compose.yml      # Full service stack
 ├── config/
 │   └── odoo.conf           # Odoo configuration
 ├── nginx/
 │   └── odoo.conf           # Reverse proxy config
-├── addons/                 # Custom addons (your modules go here)
+├── addons/                 # Your custom modules go here
 ├── enterprise/             # Enterprise addons (if licensed)
 ├── init-fresh.sh           # Full install script
-├── .env.example            # Secret template
+├── .env.example            # Secrets template
 ├── ARCHITECTURE.md         # System architecture & data flows
 ├── BEST_PRACTICES.md       # Startup management playbook
 └── CLAUDE.md               # Development reference
 ```
-
-## Custom Addons
-
-Place custom modules in `addons/`. They are automatically included in the addon path.
 
 ## Configuration
 
@@ -85,6 +81,18 @@ All secrets are managed via `.env` (git-ignored). Copy `.env.example` and fill i
 | `POSTGRES_PASSWORD` | Database password |
 | `ODOO_ADMIN_PASSWD` | Odoo master password |
 | `DST_ODOO_PASSWORD` | Odoo admin user password |
+
+## Localization
+
+The default setup uses US localization (`l10n_us`). To use a different country:
+
+1. Install your country's localization module (e.g., `l10n_be`, `l10n_de`, `l10n_fr`)
+2. Configure your chart of accounts, taxes, and fiscal positions
+3. Set your company's country and currency in Settings
+
+## Multi-Currency Payroll
+
+The setup includes separate payroll journals for different currencies. Assign the correct journal on each employee's contract to route payroll entries to the right currency.
 
 ## Deployment
 
@@ -102,8 +110,10 @@ For SSL, update `nginx/odoo.conf` with your domain and certificates.
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — Infrastructure, data flows, module map
 - [BEST_PRACTICES.md](BEST_PRACTICES.md) — How to manage a startup with Odoo
-- [CLAUDE.md](CLAUDE.md) — Development notes and reference
+- [CLAUDE.md](CLAUDE.md) — Development reference
 
 ## License
+
+MIT — see [LICENSE](LICENSE).
 
 Odoo Community Edition: LGPL-3.0. OCA addons: AGPL-3.0.
