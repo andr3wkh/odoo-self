@@ -1,0 +1,34 @@
+# Secrets
+.env
+*.env.local
+
+# Migration scripts (one-time use, contain paths/config — copy to server directly)
+migrate_*.py
+setup_andrew.py
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+postgres-data/
+redis-data/
+odoo-data/
+
+# Logs
+*.log
+
+# Enterprise addons (licensed - do not commit)
+enterprise/
